@@ -67,12 +67,12 @@ def train(n_iters=-1):
                 pickle.dump(all_losses, fp)
 
             with torch.no_grad():
-                print("------------------------------ {}".format(iter_))
-                print("inputs:", torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy())
-                print("predictions:", torch.argmax(output, dim=1).numpy())
-                #logging.info("------------------------------ {}".format(iter_))
-                #logging.info("inputs: {}", torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy())
-                #logging.info("predictions: {}", torch.argmax(output, dim=1).numpy())
+                #print("------------------------------ {}".format(iter_))
+                #print("inputs:", torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy())
+                #print("predictions:", torch.argmax(output, dim=1).numpy())
+                logging.info("------------------------------ {}".format(iter_))
+                logging.info("inputs: {}", np.array_str(torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy()))
+                logging.info("predictions: {}", np.array_str(torch.argmax(output, dim=1).numpy()))
 
         if iter_ % plot_every == 0:
             all_losses.append(total_loss / plot_every)
