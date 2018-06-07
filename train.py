@@ -7,12 +7,16 @@ import torch.optim as optim
 
 import logging
 import pickle
+import time
 
 
 
 # local modules
 from process_data import data_uID
+
 from utils import tunable_parameters
+from utils import timeSince
+
 from models import HitPredictor
 
 def train(n_iters=-1):
@@ -26,13 +30,13 @@ def train(n_iters=-1):
                    n_lstm_layers=1)
 
     total_tunable = tunable_parameters(rnn)
-    logging.info('total parameters in RNN:', total_tunable)
+    logging.info('total parameters in RNN: {}'.format(total_tunable))
 
     if n_iters < 0:
         n_iters = total_tunable*2
 
-    print_every = int(n_iters/50)
-    plot_every = int(n_iters/1000)
+    print_every = int(n_iters/50) + 1
+    plot_every = int(n_iters/1000) + 1
     all_losses = []
     total_loss = 0
     start = time.time()
@@ -63,9 +67,12 @@ def train(n_iters=-1):
                 pickle.dump(all_losses, fp)
 
             with torch.no_grad():
-                logging.info("------------------------------ ", iter_)
-                logging.info("inputs:", torch.reshape(torch.argmax(input_, dim=2), (-1,)))
-                logging.info("predictions:", torch.argmax(tags_, dim=1))
+                print("------------------------------ {}".format(iter_))
+                print("inputs:", torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy())
+                print("predictions:", torch.argmax(output, dim=1).numpy())
+                #logging.info("------------------------------ {}".format(iter_))
+                #logging.info("inputs: {}", torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy())
+                #logging.info("predictions: {}", torch.argmax(output, dim=1).numpy())
 
         if iter_ % plot_every == 0:
             all_losses.append(total_loss / plot_every)
@@ -78,6 +85,6 @@ def train(n_iters=-1):
 
 if __name__ == "__main__":
     log_file_name = "log_01"
-    logging.basicConfig(file_name=log_file_name, level=logging.DEBUG)
+    logging.basicConfig(filename=log_file_name, level=logging.DEBUG)
 
     train(20)

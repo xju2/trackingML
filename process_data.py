@@ -9,6 +9,7 @@ from trackml.score import score_event
 import torch
 
 import pandas as pd
+import numpy as np
 
 import glob
 import os
@@ -31,7 +32,7 @@ class data_uID(object):
         self.det_uID = make_uID(self.det)
         self.modules = self.det_uID.shape[0]
 
-    def load_training(path='input/train_1/event000001000'):
+    def load_training(self, path='input/train_1/event000001000'):
         if hasattr(self, 'data_pool'):
             for train, truth in data_pool:
                 del train
@@ -47,8 +48,8 @@ class data_uID(object):
             for event in train:
                 self.data_pool.append(read(event))
 
-        logging.info('total events:', len(self.data_pool))
-        logging.info('total truth particles:', sum([y.shape[0] for x,y in self.data_pool]))
+        logging.info('total events: {}'.format(len(self.data_pool)))
+        logging.info('total truth particles: {:e}'.format(sum([y.shape[0] for x,y in self.data_pool])))
 
     def read_event(self, path):
         hits, truth = load_event(path, parts=['hits', 'truth'])
