@@ -19,5 +19,6 @@ git clone https://github.com/LAL/trackml-library.git
 ```
 and install it
 ```
-pip install --user <path/to/repository>
+cd trackml-library
+pip install --user .
 ```
