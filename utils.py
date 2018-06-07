@@ -3,6 +3,7 @@
 import numpy as np
 import pandas as pd
 
+
 def get_features(df):
     x = df.x.values
     y = df.y.values
@@ -15,14 +16,14 @@ def get_features(df):
 
     r2 = np.sqrt(x**2 + y**2)
     z2 = z/r2
-    
+
     df['x2'] = x2
     df['y2'] = y2
     df['z2'] = z2
     df['r2'] = r2
     df['r'] = r
-    
-    
+
+
     # eta, and phi
     theta = np.arccos(z/r)
     phi = np.arctan2(y, x)
@@ -30,7 +31,7 @@ def get_features(df):
     df['eta'] = eta
     df['phi'] = phi
     df['absZ'] = np.abs(z)
-    
+
     return df
 
 
@@ -49,13 +50,13 @@ def view(df, pID, numb=10, pp=None, pID_name='particle_id'):
             pp = pID
         else:
             pp = pID.sample(numb)
-            
+
     for p in pp:
         if p == 0:
             continue
         data = df[df[pID_name] == p][['r2', 'eta', 'phi', 'z', 'absZ']].sort_values(by=['absZ']).values
         ax1.plot(data[:,3], data[:,0], '-', alpha=0.5, lw=4, label='{}'.format(p))
-        ax1.scatter(data[:,3], data[:,0], marker='o', edgecolor='black', s=np.ones(len(data))*30, alpha=0.5)        
+        ax1.scatter(data[:,3], data[:,0], marker='o', edgecolor='black', s=np.ones(len(data))*30, alpha=0.5)
 
         ax2.plot(data[:,3], data[:,1], '-', alpha=0.5, lw=4, label='{}'.format(p))
         ax2.scatter(data[:,3], data[:,1], marker='o', edgecolor='black', s=np.ones(len(data))*30, alpha=0.5)
@@ -63,17 +64,17 @@ def view(df, pID, numb=10, pp=None, pID_name='particle_id'):
         ax3.plot(np.abs(data[:,3]), data[:,2], '-', alpha=0.5, lw=4, label='{}'.format(p))
         ax3.scatter(np.abs(data[:,3]), data[:,2], marker='o', edgecolor='black', s=np.ones(len(data))*30, alpha=0.5)
 
-        
+
         ax4.plot(data[:,2], np.abs(data[:,3]), '-', alpha=0.5, lw=4, label='{}'.format(p))
         ax4.scatter(data[:,2], np.abs(data[:,3]), marker='o', edgecolor='black', s=np.ones(len(data))*30, alpha=0.5)
-        
+
     ax1.set_xlabel("Z [mm]")
     ax1.set_ylabel("r [mm]")
     ax1.xaxis.set_minor_locator(loc)
     ax1.set_xlim(-3200, 3200)
     ax1.set_ylim(0, 1100)
 
-        
+
     ax2.set_xlabel("Z [mm]")
     ax2.set_ylabel("eta")
     ax2.yaxis.set_minor_locator(loc0p4)
@@ -81,13 +82,13 @@ def view(df, pID, numb=10, pp=None, pID_name='particle_id'):
     ax2.set_xlim(-3200, 3200)
     ax2.set_ylim(-5, 5)
     ax2.grid(True)
-    
+
     ax3.set_xlabel("Z [mm]")
     ax3.set_ylabel("phi")
     ax3.xaxis.set_minor_locator(loc)
     ax3.set_xlim(-3200, 3200)
     ax3.set_ylim(-np.pi, np.pi)
-    
+
     ax4.grid(True)
     ax4.set_ylim(0, 3200)
     if numb < 12:
@@ -110,3 +111,23 @@ def make_uID(det):
                 data.append([vol, layer, module, icount])
                 icount += 1
     return pd.DataFrame(data=data, columns=['volume_id', 'layer_id', 'module_id', 'uID'])
+
+
+import time
+import math
+
+def timeSince(since):
+    now = time.time()
+    s = now - since
+    m = math.floor(s / 60)
+    s -= m * 60
+    return '%dm %ds' % (m, s)
+
+
+def tunable_parameters(model):
+    return sum([p.numel() for p in model.parameters() if p.requires_grad])
+
+
+import random
+def random_choice(l):
+    return l[random.randint(0, len(l) - 1)]
