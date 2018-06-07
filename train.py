@@ -5,11 +5,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+import numpy as np
+
 import logging
 import pickle
 import time
-
-
+import sys
 
 # local modules
 from process_data import data_uID
@@ -19,9 +20,9 @@ from utils import timeSince
 
 from models import HitPredictor
 
-def train(n_iters=-1):
+def train(path='input/train_1/event000001000', n_iters=-1):
     data = data_uID()
-    data.load_training()
+    data.load_training(path)
     total_modules = data.modules
 
     criterion = nn.NLLLoss()
@@ -33,8 +34,9 @@ def train(n_iters=-1):
     logging.info('total parameters in RNN: {}'.format(total_tunable))
 
     if n_iters < 0:
-        n_iters = total_tunable*2
+        n_iters = int(total_tunable*1.2)
 
+    print("total iterations", n_iters)
     print_every = int(n_iters/50) + 1
     plot_every = int(n_iters/1000) + 1
     all_losses = []
@@ -59,6 +61,9 @@ def train(n_iters=-1):
         optimizer.step()
 
         normed_loss = loss.item()/input_.size(0)
+        if normed_loss < 1E-3:
+            break
+
         total_loss += normed_loss
         if iter_ % print_every == 0:
             print('%s (%d %d%%) %.4f' % (timeSince(start), iter_, iter_ / n_iters * 100, normed_loss))
@@ -71,8 +76,8 @@ def train(n_iters=-1):
                 #print("inputs:", torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy())
                 #print("predictions:", torch.argmax(output, dim=1).numpy())
                 logging.info("------------------------------ {}".format(iter_))
-                logging.info("inputs: {}", np.array_str(torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy()))
-                logging.info("predictions: {}", np.array_str(torch.argmax(output, dim=1).numpy()))
+                logging.info("inputs: %s", np.array_str(torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy()))
+                logging.info("predictions: %s", np.array_str(torch.argmax(output, dim=1).numpy()))
 
         if iter_ % plot_every == 0:
             all_losses.append(total_loss / plot_every)
@@ -85,6 +90,11 @@ def train(n_iters=-1):
 
 if __name__ == "__main__":
     log_file_name = "log_01"
-    logging.basicConfig(filename=log_file_name, level=logging.DEBUG)
-
-    train(20)
+    logging.basicConfig(filename=log_file_name, level=logging.DEBUG,
+                        format='<%(levelname)s> %(asctime)s : %(message)s',
+                        datefmt='%Y/%m/%d %I:%M:%S %p'
+                       )
+    if len(sys.argv) > 1:
+        train(sys.argv[1])
+    else:
+        train()

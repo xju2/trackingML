@@ -44,7 +44,8 @@ class data_uID(object):
         if "event" in path:
             self.data_pool.append(read(path))
         else:
-            train = np.unique([p.split('-')[0] for p in sorted(glob.glob(os.path.join(path, '**')))])
+            print("reading: ", path)
+            train = np.unique([p.split('-')[0] for p in sorted(glob.glob(path+'/**'))])
             for event in train:
                 self.data_pool.append(read(event))
 
