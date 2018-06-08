@@ -11,6 +11,7 @@ import logging
 import pickle
 import time
 import sys
+import os
 
 # local modules
 from process_data import data_uID
@@ -22,18 +23,28 @@ from models import HitPredictor
 
 def train(path='input/train_1/event000001000', n_iters=-1):
     data = data_uID()
-    data.load_training(path)
+
+    data.load_training(path, data.read_event_with_eta_cut)
+
     total_modules = data.modules
+    logging.info('total modules %s', total_modules)
 
     criterion = nn.NLLLoss()
     rnn = HitPredictor(input_dim=total_modules+1, hidden_dim=20,
                    output_dim=total_modules+1,
                    n_lstm_layers=1)
+    print(rnn)
 
     tmp_model_dir = 'tmp_trained_model'
-    if os.path.exists(tmp_model_dir):
+    final_train_model = 'final_trained_model'
+    if os.path.exists(final_train_model):
+        rnn.load_state_dict(torch.load(final_train_model))
+        print("continue training")
+    elif os.path.exists(tmp_model_dir):
         rnn.load_state_dict(torch.load(tmp_model_dir))
         print("continue training")
+    else:
+        pass
 
     total_tunable = tunable_parameters(rnn)
     logging.info('total parameters in RNN: {}'.format(total_tunable))
@@ -77,9 +88,6 @@ def train(path='input/train_1/event000001000', n_iters=-1):
                 pickle.dump(all_losses, fp)
 
             with torch.no_grad():
-                #print("------------------------------ {}".format(iter_))
-                #print("inputs:", torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy())
-                #print("predictions:", torch.argmax(output, dim=1).numpy())
                 logging.info("------------------------------ {}".format(iter_))
                 logging.info("inputs: %s", np.array_str(torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy()))
                 logging.info("predictions: %s", np.array_str(torch.argmax(output, dim=1).numpy()))
