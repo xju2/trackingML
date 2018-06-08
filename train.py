@@ -30,6 +30,11 @@ def train(path='input/train_1/event000001000', n_iters=-1):
                    output_dim=total_modules+1,
                    n_lstm_layers=1)
 
+    tmp_model_dir = 'tmp_trained_model'
+    if os.path.exists(tmp_model_dir):
+        rnn.load_state_dict(torch.load(tmp_model_dir))
+        print("continue training")
+
     total_tunable = tunable_parameters(rnn)
     logging.info('total parameters in RNN: {}'.format(total_tunable))
 
@@ -67,7 +72,7 @@ def train(path='input/train_1/event000001000', n_iters=-1):
         total_loss += normed_loss
         if iter_ % print_every == 0:
             print('%s (%d %d%%) %.4f' % (timeSince(start), iter_, iter_ / n_iters * 100, normed_loss))
-            torch.save(rnn.state_dict(), "tmp_trained_model")
+            torch.save(rnn.state_dict(), tmp_model_dir)
             with open('tmp_loss_list', 'wb') as fp:
                 pickle.dump(all_losses, fp)
 
