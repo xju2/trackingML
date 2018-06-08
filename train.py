@@ -21,10 +21,12 @@ from utils import timeSince
 
 from models import HitPredictor
 
+from optparse import OptionParser
+
 def train(path='input/train_1/event000001000', n_iters=-1):
     data = data_uID()
 
-    data.load_training(path, data.read_event_with_eta_cut)
+    data.load_training(path, eta_cut=3.2)
 
     total_modules = data.modules
     logging.info('total modules %s', total_modules)
@@ -53,8 +55,8 @@ def train(path='input/train_1/event000001000', n_iters=-1):
         n_iters = int(total_tunable*1.2)
 
     print("total iterations", n_iters)
-    print_every = int(n_iters/50) + 1
-    plot_every = int(n_iters/1000) + 1
+    print_every = int(n_iters/20) + 1
+    plot_every = int(n_iters/200) + 1
     all_losses = []
     total_loss = 0
     start = time.time()
@@ -102,12 +104,19 @@ def train(path='input/train_1/event000001000', n_iters=-1):
 
 
 if __name__ == "__main__":
-    log_file_name = "log_01"
+    usage = "%prog [options]"
+    version = '%prog 0.0.1'
+    parser = OptionParser(usage=usage, description="train RNN with kaggle", version=version)
+
+    parser.add_option('-i', '--iters', default=20, type=int, help='iterations')
+    parser.add_option('-p', '--path', default='input/train_1/event000001000', help='directory for training data')
+
+    (options, args) = parser.parse_args()
+
+    log_file_name = "log_%s"%time.time()
     logging.basicConfig(filename=log_file_name, level=logging.DEBUG,
                         format='<%(levelname)s> %(asctime)s : %(message)s',
                         datefmt='%Y/%m/%d %I:%M:%S %p'
                        )
-    if len(sys.argv) > 1:
-        train(sys.argv[1])
-    else:
-        train(n_iters=20)
+
+    train(path=options.path, n_iters=options.iters)

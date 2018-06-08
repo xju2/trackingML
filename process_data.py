@@ -80,7 +80,7 @@ class data_uID(object):
         # apply the eta cuts on hits
         hits_features = hits_features[(hits_features['eta'] > eta_cut) | (hits_features['eta'] < -1 * eta_cut)]
 
-        hits_with_truth = hits_features.merge(filter_truth(truth), on='hit_id')[['uID', 'particle_id']]
+        hits_with_truth = hits_features.merge(filter_truth(truth), on='hit_id')
         particles = pd.Series(np.unique(hits_with_truth['particle_id']))
 
         return hits_with_truth, particles
@@ -88,7 +88,7 @@ class data_uID(object):
     def get_a_track(self):
         """ randomly pick a particle,
         return it's associated list of hits"""
-        event_key = random_choice(self.event_list.key())
+        event_key = random_choice(list(self.event_list.keys()))
         train, truth = self.event_list.get(event_key)
         pID = truth.sample(1).values
         hits = train[train['particle_id'] == pID[0]]['uID'].values
