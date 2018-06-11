@@ -11,6 +11,7 @@ import logging
 import pickle
 import time
 import sys
+import os
 
 # local modules
 from process_data import data_uID
