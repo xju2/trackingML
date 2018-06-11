@@ -21,20 +21,32 @@ from utils import timeSince
 
 from models import HitPredictor
 
+from optparse import OptionParser
+
 def train(path='input/train_1/event000001000', n_iters=-1):
     data = data_uID()
-    data.load_training(path)
+
+    data.load_training(path, eta_cut=3.2)
+
     total_modules = data.modules
+    logging.info('total modules %s', total_modules)
 
     criterion = nn.NLLLoss()
     rnn = HitPredictor(input_dim=total_modules+1, hidden_dim=20,
                    output_dim=total_modules+1,
                    n_lstm_layers=1)
+    print(rnn)
 
     tmp_model_dir = 'tmp_trained_model'
-    if os.path.exists(tmp_model_dir):
+    final_train_model = 'final_trained_model'
+    if os.path.exists(final_train_model):
+        rnn.load_state_dict(torch.load(final_train_model))
+        print("continue training")
+    elif os.path.exists(tmp_model_dir):
         rnn.load_state_dict(torch.load(tmp_model_dir))
         print("continue training")
+    else:
+        pass
 
     total_tunable = tunable_parameters(rnn)
     logging.info('total parameters in RNN: {}'.format(total_tunable))
@@ -43,8 +55,8 @@ def train(path='input/train_1/event000001000', n_iters=-1):
         n_iters = int(total_tunable*1.2)
 
     print("total iterations", n_iters)
-    print_every = int(n_iters/50) + 1
-    plot_every = int(n_iters/1000) + 1
+    print_every = int(n_iters/20) + 1
+    plot_every = int(n_iters/200) + 1
     all_losses = []
     total_loss = 0
     start = time.time()
@@ -78,9 +90,6 @@ def train(path='input/train_1/event000001000', n_iters=-1):
                 pickle.dump(all_losses, fp)
 
             with torch.no_grad():
-                #print("------------------------------ {}".format(iter_))
-                #print("inputs:", torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy())
-                #print("predictions:", torch.argmax(output, dim=1).numpy())
                 logging.info("------------------------------ {}".format(iter_))
                 logging.info("inputs: %s", np.array_str(torch.reshape(torch.argmax(input_, dim=2), (-1,)).numpy()))
                 logging.info("predictions: %s", np.array_str(torch.argmax(output, dim=1).numpy()))
@@ -95,12 +104,19 @@ def train(path='input/train_1/event000001000', n_iters=-1):
 
 
 if __name__ == "__main__":
-    log_file_name = "log_01"
+    usage = "%prog [options]"
+    version = '%prog 0.0.1'
+    parser = OptionParser(usage=usage, description="train RNN with kaggle", version=version)
+
+    parser.add_option('-i', '--iters', default=20, type=int, help='iterations')
+    parser.add_option('-p', '--path', default='input/train_1/event000001000', help='directory for training data')
+
+    (options, args) = parser.parse_args()
+
+    log_file_name = "log_%s"%time.time()
     logging.basicConfig(filename=log_file_name, level=logging.DEBUG,
                         format='<%(levelname)s> %(asctime)s : %(message)s',
                         datefmt='%Y/%m/%d %I:%M:%S %p'
                        )
-    if len(sys.argv) > 1:
-        train(sys.argv[1])
-    else:
-        train(n_iters=20)
+
+    train(path=options.path, n_iters=options.iters)
