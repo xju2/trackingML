@@ -1,4 +1,4 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 # coding: utf-8
 
 import numpy as np
@@ -95,16 +95,16 @@ def recursive_fit_in_eta_phi(dfh, nruns=400, truth=None):
     return dfh['s1'].values, epochs, scores
 
 
-def fit_event(event, discriminator):
-    hits = load_event(event, parts=['hits'])
+def fit_event(event):
+    hits, = load_event(event, parts=['hits'])
     hits['event_id'] = int(event[-9:])
     hits = get_features(hits)
-    hits['particle_id'] = discriminator(hits)[0]
+    hits['particle_id'] = recursive_fit_in_eta_phi(hits)[0]
     return hits[['event_id', 'hit_id', 'particle_id']].copy()
 
 
 def submit(event, file_name):
-    predictions = fit_event(event, recursive_fit_in_eta_phi)
+    predictions = fit_event(event)
     predictions.to_csv(file_name, index=False)
 
 
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     usage = "%prog [options] input_event_dir output_csv_dir"
     version = '%prog 0.0.1'
     parser = OptionParser(usage=usage,
-                          description="Fit hits with DBScan with recursively changing eta, ph",
+                          description="Fit hits with DBScan with recursively changing eta, phi",
                           version=version)
     (options, args) = parser.parse_args()
 
