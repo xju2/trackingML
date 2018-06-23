@@ -32,6 +32,8 @@ def get_features(df):
     df['phi'] = phi
     df['absZ'] = np.abs(z)
 
+    df['z1'] = z/r2
+
     return df
 
 
@@ -61,8 +63,8 @@ def view(df, pID, numb=10, pp=None, pID_name='particle_id'):
         ax2.plot(data[:,3], data[:,1], '-', alpha=0.5, lw=4, label='{}'.format(p))
         ax2.scatter(data[:,3], data[:,1], marker='o', edgecolor='black', s=np.ones(len(data))*30, alpha=0.5)
 
-        ax3.plot(np.abs(data[:,3]), data[:,2], '-', alpha=0.5, lw=4, label='{}'.format(p))
-        ax3.scatter(np.abs(data[:,3]), data[:,2], marker='o', edgecolor='black', s=np.ones(len(data))*30, alpha=0.5)
+        ax3.plot(data[:,3], data[:,2], '-', alpha=0.5, lw=4, label='{}'.format(p))
+        ax3.scatter(data[:,3], data[:,2], marker='o', edgecolor='black', s=np.ones(len(data))*30, alpha=0.5)
 
 
         ax4.plot(data[:,2], np.abs(data[:,3]), '-', alpha=0.5, lw=4, label='{}'.format(p))
@@ -131,3 +133,25 @@ def tunable_parameters(model):
 import random
 def random_choice(l):
     return l[random.randint(0, len(l) - 1)]
+
+
+def plot_detector(hits):
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111)
+    hits.plot.scatter(x='z', y='r2', ax=ax)
+    eta = [0.1, 1, 2, 3, 3.2, 4, 4.5]
+    # eta = - np.log(np.tan(theta/2.))
+    theta = [2 * math.atan(math.exp(-x)) for x in eta]
+    xp = np.arange(0, 3200, 200)
+    xm = np.arange(-3200, 200, 200)
+    for th in theta:
+        yp = xp * np.tan(th)
+        ym = xm * np.tan(-1 * th)
+        ax.plot(xp, yp, '-', alpha=0.5, lw=3)
+        ax.plot(xm, ym, '-', alpha=0.5, lw=3)
+
+    ax.set_xlim(-3200, 3200)
+    ax.set_ylim(0, 1100)
+    ax.xaxis.set_minor_locator(loc)
+    plt.tight_layout()
+    plt.show()

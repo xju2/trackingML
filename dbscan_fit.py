@@ -106,6 +106,14 @@ def fit_event(event):
 def submit(event, file_name):
     predictions = fit_event(event)
     predictions.to_csv(file_name, index=False)
+    
+    
+def basic_dbscan_fit(hits, eps=0.001, features=['eta', 'phi', 'z2']):
+    scl_ = StandardScaler()
+    dbscan_ = DBSCAN(eps=eps, min_samples=1, algorithm='auto', n_jobs=1)
+    hits_cp = hits.copy()
+    hits_cp['track_id'] = dbscan_.fit_predict(scl_.fit_transform(hits_cp[features].values))
+    return hits_cp
 
 
 if __name__ == "__main__":
