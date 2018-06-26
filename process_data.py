@@ -44,6 +44,7 @@ class data_uID(object):
     """
     def __init__(self, input_path='input'):
         self.event_list = {}
+        self.input_path = input_path
         # self.det = pd.read_csv(os.path.join(input_path, 'detectors.csv'))
         # self.det_uID = make_uID(self.det)
         # self.modules = self.det_uID.shape[0]
@@ -61,7 +62,7 @@ class data_uID(object):
         else:
             train = np.unique([p.split('-')[0] for p in sorted(glob.glob(path + '/**'))])
             data_list = [self.read_event(ee) for ee in train]
-            det = pd.read_csv(os.path.join(input_path, 'detectors.csv'))
+            det = pd.read_csv(os.path.join(self.input_path, 'detectors.csv'))
             df_uID = make_uID(det)
             self.modules = df_uID.shape[0]
             for event in train:
