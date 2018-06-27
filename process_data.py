@@ -20,6 +20,41 @@ from utils import make_uID
 from utils import random_choice
 from utils import get_features
 
+def get_real_tracks(event):
+    hits, cells, particles, truth = load_event(event)
+    hits_truth = pd.merge(hits, truth, on=['hit_id'])
+    pIDs = np.unique(hits_truth['particle_id'])
+    track_list = []
+    for pID in pIDs:
+        if pID == 0:
+            continue
+        this_track = hits_truth[hits_truth['particle_id'] == pID][['x', 'y', 'z']].values
+        this_track = np.pad(this_track, ((0, 20), (0, 0)), 'constant', constant_values=(4, 99999))[:20, :]
+        track_list.append(this_track)
+    return np.array(track_list)
+
+
+import random
+def get_fake_tracks(event, n_sample=5000):
+    hits, = load_event(event, parts=['hits'])
+    fake_tracks = []
+    for idx in range(n_sample):
+        rand_hits = random.randint(0, 20)
+        data = hits.sample(rand_hits)[['x', 'y', 'z']].values
+        data = np.pad(data, ((0, 20), (0, 0)), 'constant', constant_values=(4, 99999))[:20, :]
+        fake_tracks.append(data)
+    return np.array(fake_tracks)
+
+
+def random_inputs(real_tracks, fake_tracks, batch_size):
+    nsample = int(batch_size/2)
+    start = random.randint(0, real_tracks.shape[0]-nsample)
+    tracks = np.concatenate((real_tracks[start: start+nsample],
+                             fake_tracks[start: start+nsample]), axis=0)
+
+    target = [1]*nsample + [0]*nsample
+    return tracks, np.array(target)
+
 
 def filter_truth(truth):
     return truth[ (truth['weight'] > 5e-7 ) & (truth['particle_id'] != 0) ]
