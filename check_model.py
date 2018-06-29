@@ -21,15 +21,15 @@ from process_data import get_fake_tracks
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-batch_size = 64
 
-def predict_model(model, input):
+def predict_IsGoodTrack(model, input, batch_size=64):
+    """
+    predict the model of IsGoodTrack
+    """
     with torch.no_grad():
         input_tensor = torch.from_numpy(input)
         input_tensor = input_tensor.expand(batch_size, *input_tensor.size())
         input_tensor = input_tensor.to(device)
-        # print(input_tensor.size())
-        # print(input_tensor.type())
         output = model(input_tensor.view(batch_size, -1))
         return output[0]
 
@@ -37,12 +37,12 @@ def get_roc(model, real_tracks, fake_tracks):
     y = []
     scores = []
     for real_track in real_tracks[:1000]:
-        output = predict_model(model, real_track)
+        output = predict_IsGoodTrack(model, real_track)
         scores.append(output)
         y.append(1)
 
     for fake_track in fake_tracks[:1000]:
-        output = predict_model(model, fake_track)
+        output = predict_IsGoodTrack(model, fake_track)
         if output is None:
             continue
         scores.append(output)
@@ -63,7 +63,7 @@ def main():
     # create RNN model
     input_dim = 60
     hidden_dim = 60
-    model = IsGoodTrack(input_dim, hidden_dim, batch_size, n_lstm_layers=3, device=device)
+    model = IsGoodTrack(input_dim, hidden_dim, batch_size=64, n_lstm_layers=3, device=device)
     model.to(device)
     model.hidden = model.init_hidden()
     print("total parameters:", tunable_parameters(model))

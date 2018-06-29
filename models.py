@@ -61,3 +61,51 @@ class IsGoodTrack(nn.Module):
 #         output = self.fc4(output)
 #         output = self.sigma(output)
         return output
+
+class HitGausPredictor(nn.Module):
+    """
+    A PyTorch module for particle track state estimation and hit prediction.
+
+    This module is an RNN which takes a sequence of hits and produces a
+    Gaussian shaped prediction for the location of the next hit.
+    """
+
+    def __init__(self, hidden_dim=5, batch_size=64, device=None):
+        super(HitGausPredictor, self).__init__()
+        input_dim = 3
+        output_dim = 2
+        self.lstm = nn.LSTM(input_dim, hidden_dim, batch_first=True)
+#         out_size = int(output_dim * (output_dim + 3) / 2)
+        out_size = 4
+        self.fc = nn.Linear(hidden_dim, out_size)
+        self.device = device
+        self.batch_size = batch_size
+
+
+    def forward(self, x):
+        """Might want to accept also the radius of the target layer."""
+        input_size = x.size()
+
+        # Initialize the LSTM hidden state
+        h = (torch.zeros(self.lstm.num_layers, self.batch_size,
+                         self.lstm.hidden_size, device=self.device),
+             torch.zeros(self.lstm.num_layers, self.batch_size,
+                         self.lstm.hidden_size, device=self.device))
+
+        # Apply the LSTM module
+        x, h = self.lstm(x, h)
+        # Squash layer axis into batch axis
+        x = x.contiguous().view(-1, x.size(-1))
+
+        # Apply linear layer
+        output = self.fc(x)
+
+        # Extract and transform the gaussian parameters
+        means = output[:, :2]
+        variances = output[:, 2:4] ## ensure it is positive
+        variances = torch.exp(variances)
+
+        # Expand the layer axis again, just for consistency/interpretability
+        means = means.contiguous().view(self.batch_size, -1, 2)
+        variances = variances.contiguous().view(self.batch_size, -1, 2)
+        return means, variances
