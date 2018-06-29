@@ -14,11 +14,13 @@ import numpy as np
 import glob
 import os
 import logging
+import pickle
 
 # import from load modules
 from utils import make_uID
 from utils import random_choice
 from utils import get_features
+
 
 def get_real_tracks(event):
     hits, cells, particles, truth = load_event(event)
@@ -33,6 +35,27 @@ def get_real_tracks(event):
         track_list.append(this_track)
     return np.array(track_list)
 
+
+def normalize_r_phi_z():
+    track_list_raw = pickle.load(open('ten_hists.npy', 'rb'))
+
+    mean_r, sigma_r = 913.681763, 692.430542
+    mean_phi, sigma_phi = 0.009939, 1.823752
+    mean_z, sigma_z = -2.315056, 1061.912476
+    for event in track_list_raw:
+        for tracks in event:
+            tracks[:, 0] = (tracks[:, 0] - mean_r)/sigma_r
+            tracks[:, 1] = (tracks[:, 1] - mean_phi)/sigma_phi
+            tracks[:, 2] = (tracks[:, 2] + mean_z)/sigma_z
+
+    track_arrays = np.concatenate([np.array(x) for x in track_list_raw])
+    print("total number of tracks: {}, with {} hits".format(
+        track_arrays.shape[0], track_arrays.shape[1]))
+
+    outname = 'ten_hists_normed.npy'
+    with open(outname, 'wb') as fp:
+        pickle.dump(track_arrays, fp)
+    print("tracks written to: ", outname)
 
 import random
 def get_fake_tracks(event, n_sample=5000):

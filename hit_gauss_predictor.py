@@ -28,23 +28,26 @@ def cal_res(model, test_track):
 
 def gaus_llh_loss(outputs, targets):
     """Custom gaussian log-likelihood loss function"""
-    batches = means.size(0)
-    hits = means.size(1)
+    if torch.isnan(outputs).any():
+        raise Exception("Net's output is NAN")
+    batches = outputs.size(0)
+    hits = outputs.size(1)
 
     # Flatten layer axis into batch axis to use batch matrix operations
-    outputs = outputs.contiguous().view(-1, output.size(-1))
+    outputs = outputs.contiguous().view(-1, outputs.size(-1))
     targets = targets.contiguous().view(-1, targets.size(-1))
 
     # Calculate the residual error
-    dx1 = target[:, 0] - outputs[:, 0]
-    dx2 = target[:, 1] - outputs[:, 1]
-    c1 = outputs[:, 2]
-    c2 = outputs[:, 3]
+    dx1 = targets[:, 0] - outputs[:, 0]
+    dx2 = targets[:, 1] - outputs[:, 1]
+    c1 =  outputs[:, 2]
+    c2 =  outputs[:, 3]
     rho = outputs[:, 4]
 
     det_sigma = (1 - rho*rho) * c1 * c2
+    log_det = torch.log(det_sigma)
     chi2 = (dx1*dx1/c1 + dx2*dx2/c2 - 2*rho*dx1*dx2/torch.sqrt(c1*c2))/(1-rho*rho)
-    prob = det_sigma + chi2
+    prob = log_det + chi2
 
     return torch.sum(prob)/batches/hits
 
@@ -86,5 +89,10 @@ class HitGausPredictor(nn.Module):
 
         # Apply linear layer
         output = self.fc(x)
+        output[:, 2] = torch.exp (output[:, 2]) # ensure it's positive
+        output[:, 3] = torch.exp (output[:, 3]) # ensure it's positive
+        output[:, 4] = torch.tanh(output[:, 4]) # ensure it ranges from [-1, 1]
 
+        output = output.contiguous().view(input_size[0], input_size[1], -1)
+        print(output[0])
         return output

@@ -35,6 +35,11 @@ def train_model(model, optimizer, loss_func,
             loss = loss_func(output_t, target_t)
             loss.backward()
             optimizer.step()
+
+            break
+            if torch.isnan(loss):
+                print("Loss of batch {} is NAN".format(ibatch))
+                break
             sum_loss += loss.item()
 
         loss_train.append(sum_loss/nbatches)
