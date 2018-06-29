@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 
-def cal_res(test_track):
+def cal_res(model, test_track):
     """
     calculate predicted residual and variances
     of the model, for this test_track.

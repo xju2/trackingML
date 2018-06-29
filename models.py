@@ -109,3 +109,20 @@ class HitGausPredictor(nn.Module):
         means = means.contiguous().view(self.batch_size, -1, 2)
         variances = variances.contiguous().view(self.batch_size, -1, 2)
         return means, variances
+
+
+def cal_res(test_track):
+    test_t = torch.from_numpy(test_track)
+    target_t = torch.from_numpy(test_track[:, 1:, 1:])
+    with torch.no_grad():
+        means, covs = model(test_t)
+        means = means[:, 1:, :]
+        covs = covs[:, 1:, :]
+
+        means = means.contiguous().view(means.size(0)*means.size(1), means.size(2))
+        covs = covs.contiguous().view(covs.size(0)*covs.size(1), covs.size(2))
+        target_t = target_t.contiguous().view(target_t.size(0)*target_t.size(1),
+                                              target_t.size(2))
+
+        res = means - target_t
+        return res, covs
