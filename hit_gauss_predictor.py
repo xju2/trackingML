@@ -94,5 +94,4 @@ class HitGausPredictor(nn.Module):
         output[:, 4] = torch.tanh(output[:, 4]) # ensure it ranges from [-1, 1]
 
         output = output.contiguous().view(input_size[0], input_size[1], -1)
-        print(output[0])
         return output
