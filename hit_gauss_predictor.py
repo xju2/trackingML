@@ -11,20 +11,21 @@ def cal_res(model, test_track):
     of the model, for this test_track.
     test_track's size: [batch_size, n_hits, 3]"""
 
-    test_t = torch.from_numpy(test_track)
+    test_t = torch.from_numpy(test_track[:, :-1, :])
     target_t = torch.from_numpy(test_track[:, 1:, 1:])
     with torch.no_grad():
         output = model(test_t)
+        output = output.contiguous().view(-1, output.size(-1))
+
         means = output[:, :, 0:2]
         covs = output[:, :, 2:4]
 
-        means = means.contiguous().view(means.size(0)*means.size(1), means.size(2))
-        covs = covs.contiguous().view(covs.size(0)*covs.size(1), covs.size(2))
         target_t = target_t.contiguous().view(target_t.size(0)*target_t.size(1),
                                         target_t.size(2))
 
         res = means - target_t
-        return res, covs
+        rho = output[:, 4]
+        return res, covs, rho
 
 def gaus_llh_loss(outputs, targets):
     """Custom gaussian log-likelihood loss function"""
