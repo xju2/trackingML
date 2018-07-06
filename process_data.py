@@ -87,12 +87,13 @@ def training_data_with_eta_cut(train_dir='input/train_1', event_prefix="event000
     hits, cells, particles, truth = load_event(os.path.join(train_dir, event_prefix))
 
     hits_features = get_features(hits)
-    high_eta_hits = hits_features[(hits_features['eta'] > eta_cut) | (hits_features['eta'] < -1 * eta_cut)]
+    # high_eta_hits = hits_features[(hits_features['eta'] > eta_cut) | (hits_features['eta'] < -1 * eta_cut)]
+    high_eta_hits = hits_features[(hits_features['eta'] > eta_cut)]
     uID_for_higheta = make_uID(high_eta_hits)
     high_eta_hits_uID = pd.merge(high_eta_hits, uID_for_higheta, on=['volume_id', 'layer_id', 'module_id'])
     train_data_higheta = high_eta_hits_uID.merge(filter_truth(truth), on='hit_id')[['uID', 'particle_id']]
-
-    return train_data_higheta, uID_for_higheta.shape[0]
+    return train_data_higheta, uID_for_higheta
+    #return train_data_higheta, uID_for_higheta.shape[0]
 
 
 class data_uID(object):
