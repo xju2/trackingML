@@ -31,10 +31,11 @@ train_input = torch.from_numpy(track_arrays[0:n_trains, :-1, :]).to(device)
 train_target = torch.from_numpy(track_arrays[0:n_trains, 1:, 1:]).to(device)
 
 
-batch_size = 256
-n_epochs = 1
+batch_size = 128
+n_epochs = 100
 model = HitGausPredictor(batch_size=batch_size, device=device).to(device)
-optimizer = optim.Adam(model.parameters())
+#optimizer = optim.Adam(model.parameters())
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 print('total tunable parameters:', tunable_parameters(model))
 
 losses = train_model(model, optimizer, gaus_llh_loss,

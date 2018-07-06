@@ -36,7 +36,6 @@ def train_model(model, optimizer, loss_func,
             loss.backward()
             optimizer.step()
 
-            break
             if torch.isnan(loss):
                 print("Loss of batch {} is NAN".format(ibatch))
                 break
