@@ -30,8 +30,6 @@ from trackml.dataset import load_event
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-
-
 def train(event, n_epochs):
     # prepare training data
     # event = "input/train_1/event000001000"
