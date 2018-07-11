@@ -19,17 +19,7 @@ from rnn_module_id import ModuleIDBasedRNN
 from rnn_module_id import load_training
 
 from utils import tunable_parameters
-
-modules = 18728
-def input_target(series):
-    tensor = torch.zeros(1, len(series), modules+1)
-    for idx, h in enumerate(series):
-        tensor[0][idx][h] = 1
-
-    module_idx = series[1:].tolist()
-    module_idx.append(modules)
-    return tensor, torch.LongTensor(module_idx)
-
+from rnn_module_id import modules
 
 train_data = load_training()
 print("Total events:", len(train_data))

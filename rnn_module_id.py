@@ -16,6 +16,17 @@ import glob
 
 data_name = os.path.join('output', 'data', 'train_data_uID.pkl.gz')
 
+modules = 18728
+def input_target(series):
+    tensor = torch.zeros(1, len(series), modules+1)
+    for idx, h in enumerate(series):
+        tensor[0][idx][h] = 1
+
+    module_idx = series[1:].tolist()
+    module_idx.append(modules)
+    return tensor, torch.LongTensor(module_idx)
+
+
 def load_training():
     if os.path.exists(data_name):
         with open(data_name, 'rb') as fp:
