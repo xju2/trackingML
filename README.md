@@ -17,7 +17,7 @@ Then download the [trackml-library](https://github.com/LAL/trackml-library):
 ```
 git clone https://github.com/LAL/trackml-library.git
 ```
-and install it
+and install *trackml-library*
 ```
 cd trackml-library
 pip install --user .

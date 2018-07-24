@@ -125,7 +125,6 @@ dependencies:
     - pyyaml==3.12
     - requests==2.18.4
     - torch==0.4.0
-    - trackml==2
     - urllib3==1.22
     - xgboost==0.71
 prefix: /global/project/projectdirs/m1092/xju/miniconda3/envs/py3.6
