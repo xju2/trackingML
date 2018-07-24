@@ -1,5 +1,5 @@
 #!/bin/bash
-module load gcc/6.3.0
+module load gcc/7.3.0
 module load cmake/3.8.2
 
 source /global/project/projectdirs/m1092/xju/miniconda3/bin/activate py3.6

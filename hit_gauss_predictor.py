@@ -47,9 +47,8 @@ def gaus_llh_loss(outputs, targets):
 
     det_sigma = (1 - rho*rho) * c1 * c2
     log_det = torch.log(det_sigma)
-    chi2 = (dx1*dx1/c1 + dx2*dx2/c2 - 2*rho*dx1*dx2/torch.sqrt(c1*c2))/(1-rho*rho)
-    #prob = log_det + chi2
-    prob = torch.sqrt(det_sigma) + chi2
+    chi2 = 0.5* (dx1*dx1/c1 + dx2*dx2/c2 - 2*rho*dx1*dx2/torch.sqrt(c1*c2))/(1-rho*rho)
+    prob = log_det + chi2 # negative log likelihood
 
     return torch.sum(prob)/batches/hits
 
