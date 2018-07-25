@@ -56,14 +56,14 @@ def train(options):
     # create RNN model
     input_dim = 60
     hidden_dim = 60
-    batch_size = 64
+    batch_size = 32
     model = IsGoodTrack(input_dim, hidden_dim, batch_size, n_lstm_layers=3, device=device)
     print("total parameters:", tunable_parameters(model))
 
     model.to(device)
 
     criterion = nn.L1Loss()
-    optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
 
 
     epoch_list = []
@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
     parser.add_option('-i', '--iters', default=20, type=int, help='iterations')
     parser.add_option('-p', '--path', default='input/train_1/event000001000', help='directory for training data')
-    parser.add_option('-o', '--outDir', default='output', help='output directory')
+    parser.add_option('-o', '--output', default='output', help='output directory')
 
     (options, args) = parser.parse_args()
 
