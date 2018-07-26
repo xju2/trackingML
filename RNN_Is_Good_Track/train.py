@@ -30,6 +30,10 @@ from is_good_track import IsGoodTrack
 
 from optparse import OptionParser
 
+input_dim = 60
+hidden_dim = 60
+batch_size = 32
+n_lstm_layers = 3
 def train(options):
     event = options.path
     n_epochs = options.iters
@@ -54,13 +58,14 @@ def train(options):
     print(device)
 
     # create RNN model
-    input_dim = 60
-    hidden_dim = 60
-    batch_size = 32
-    model = IsGoodTrack(input_dim, hidden_dim, batch_size, n_lstm_layers=3, device=device)
+    model = IsGoodTrack(input_dim, hidden_dim, batch_size,
+                        n_lstm_layers=n_lstm_layers, device=device)
     print("total parameters:", tunable_parameters(model))
 
     model.to(device)
+    model_name = os.path.join(options.output, 'model_isgoodtrack')
+    if os.path.exists(model_name):
+        model.load_state_dict(torch.load(model_name))
 
     criterion = nn.L1Loss()
     optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.9)
@@ -97,6 +102,11 @@ def train(options):
             optimizer.step()
 
             sum_loss += loss.item()/batch_size
+
+            del input_track
+            del target_score
+            del input_tensor
+            del target
 
         loss_train.append(sum_loss/len(real_tracks))
 
