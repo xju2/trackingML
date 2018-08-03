@@ -47,35 +47,6 @@ def train_model(model, optimizer, loss_func,
         loss_train.append(sum_loss/nbatches)
     return loss_train
 
-def cal_res(model, test_track):
-    """
-    calculate predicted residual and variances
-    of the model, for this test_track.
-    test_track's size: [batch_size, n_hits, 3]"""
-
-    print("test track size:", test_track.shape)
-    n_events = test_track.shape[0]
-    n_batches = int(n_events/batch_size)
-    print("number of batches:", n_batches)
-    
-    with torch.no_grad():
-        output_list = []
-        for ibatch in range(n_batches):
-            start = ibatch*batch_size
-            end = start + batch_size
-            test_t = torch.from_numpy(test_track[start:end, :-1, :])
-            target_t = torch.from_numpy(test_track[start:end, 1:, 1:])
-            
-            output_tmp = model(test_t)
-            output_tmp = output_tmp.contiguous().view(-1, output_tmp.size(-1))
-            output_tmp[:, 0:2] = output_tmp[:, 0:2] - target_t.contiguous().view(-1, target_t.size(-1))
-            output_list.append(output_tmp)
-           
-        print("number of output items:", len(output_list))
-        output = torch.cat(output_list)
-        print(output.size())
-        return output
-    
 
 def gaus_llh_loss(outputs, targets):
     """Custom gaussian log-likelihood loss function"""
