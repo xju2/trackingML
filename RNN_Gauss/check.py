@@ -1,4 +1,8 @@
 import matplotlib.pyplot as plt
+import torch
+import numpy as np
+
+from train import batch_size
 
 def cal_res(model, test_track):
     """
@@ -28,6 +32,58 @@ def cal_res(model, test_track):
         output = torch.cat(output_list)
         print(output.size())
         return output
+
+
+def get_output(model, test_track):
+    """
+    calculate predicted output for this test_track.
+    test_track's size: [batch_size, n_hits, 3]"""
+
+    print("test track size:", test_track.shape)
+    n_events = test_track.shape[0]
+    n_batches = int(n_events/batch_size)
+    print("number of batches:", n_batches)
+
+    with torch.no_grad():
+        output_list = []
+        for ibatch in range(n_batches):
+            start = ibatch*batch_size
+            end = start + batch_size
+            test_t = torch.from_numpy(test_track[start:end, :-1, :])
+
+            output_tmp = model(test_t)
+            output_list.append(output_tmp)
+
+        print("number of output items:", len(output_list))
+        output = torch.cat(output_list)
+        print(output.size())
+        return output
+
+
+def plot(truth, prediction):
+    fig = plt.figure(figsize=(12, 6))
+    ax = fig.add_subplot(121)
+    target = truth[1:, 1]
+    predict = prediction[:, 0]
+    err = np.sqrt(prediction[:, 2])
+    ax.errorbar(np.arange(9), target, fmt='-*', lw=2, ms=10, label='target')
+    ax.errorbar(np.arange(9), predict, yerr=err, fmt='.', lw=2, ms=10, label='prediction')
+    ax.set_ylim(-3, 3)
+    ax.set_ylabel('$\phi$')
+    ax.set_xlabel('layer')
+    ax.legend()
+
+    ax1 = fig.add_subplot(122)
+    target2 = truth[1:, 2]
+    predict2 = prediction[:, 1]
+    err2 = np.sqrt(prediction[:, 3])
+    ax1.errorbar(np.arange(9), target2, fmt='-*', lw=2, ms=10, label='target')
+    ax1.errorbar(np.arange(9), predict2, yerr=err2, fmt='.', lw=2, ms=10, label='prediction')
+    ax1.set_ylim(-3, 3)
+    ax1.set_ylabel('$Z$')
+    ax1.set_xlabel('layer')
+    ax1.legend()
+    return fig
 
 
 def draw_bias_variances(out_batches):

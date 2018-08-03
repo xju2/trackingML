@@ -6,7 +6,6 @@ import torch.optim as optim
 
 import numpy as np
 
-from utils import tunable_parameters
 from tqdm import tqdm
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
