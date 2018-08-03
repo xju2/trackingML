@@ -21,7 +21,7 @@ z0_max_outer = 50
 
 
 def get_layer_pairs():
-    start_layers = [8, 9, 10, 1, 25, 26, 27, 28, 41]
+    start_layers = [8, 9, 10, 11, 25, 26, 27, 28, 41]
     end_layers = [9, 10, 11, 25, 26, 27, 28, 41, 42]
     layer_pairs = np.stack([start_layers, end_layers], axis=1)
     return layer_pairs
